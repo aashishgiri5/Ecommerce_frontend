@@ -1,24 +1,37 @@
 import React, { useState } from 'react'
 import { Button, Col, Container, Form, Row } from 'react-bootstrap'
 import { createUser } from '../components/backend/Auth';
+import '../App.css';
+import CustomSpinner from '../components/reusable/CustomSpinner';
+import ErrorOrSuccess from '../components/reusable/ErrorOrSuccess';
 
 
 function Signup() {
 
     const[info,setInfo]=useState({
-            firstName: "",
-            lastName:"",
+            first_name: "",
+            last_name:"",
             email:"",
             password:""
         });
-    const {firstName,lastName, email,password}=info;
+
+        const[resp,setResp]=useState(
+          {
+            error:"",
+            message:"",
+            loading:false
+          }
+        )
+        const {error,message,loading}=resp;
+
+    const {first_name,last_name, email,password}=info;
 
     const handlefirstName=e=>{
-        setInfo({...info,firstName:e.target.value});
+        setInfo({...info,first_name:e.target.value});
     }
 
       const handlelastName=e=>{
-        setInfo({...info,lastName:e.target.value});
+        setInfo({...info,last_name:e.target.value});
     }
 
       const handleemail=e=>{
@@ -35,17 +48,29 @@ function Signup() {
 
     const handleClick=()=>
     {
-        
-        createUser(info);
+         setResp({...resp,loading:true,message:"",error:""});
+        createUser(info).then(res=>{
+          if(res.statusCode==="OK"|| res.statusCode===200){
+           setResp({...resp,loading:false,message:res.message,error:""})
+          
+        }else{
+          setResp({...resp,loading:false,message:"",error:res.error})
+        }
+
+
+        }).catch(err=>{console.error()});
     }
 
-    
+    console.log(info)
 
     
     return (
-        <Container>
+      // <div className="signup_top">
+        <Container className="signup_top">
                  <Row>
     <Col md={{ span: 6, offset: 3 }}>
+
+    
 
         <Form>
  <Form.Group className="mb-3" controlId="formBasicFirstName">
@@ -74,12 +99,18 @@ function Signup() {
     Submit
   </Button>
 </Form>
+
+  <div style={{textAlign:'center'}}>
+        {loading&&<CustomSpinner/>}
+        {message&&<ErrorOrSuccess color='success' message={message}/>}
+      {error&&<ErrorOrSuccess color='danger' message={error}/>}
+      </div>
     
     </Col>
   </Row>
         </Container>
    
-     
+    //  </div>
     )
 }
 
